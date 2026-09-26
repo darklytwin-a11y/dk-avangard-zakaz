@@ -10,10 +10,12 @@ app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════════
 # ⚙️ НАСТРОЙКИ ПОЧТЫ (берутся из переменных Render)
+#    Вписывать в самом коде НЕ нужно — только на Render,
+#    во вкладке Environment. Значения ниже — запасные.
 # ═══════════════════════════════════════════════════════
 
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@dk.ru")
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.mail.ru")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.yandex.ru")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "465"))
 EMAIL_FROM = os.environ.get("EMAIL_FROM", "")
 EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
@@ -172,5 +174,6 @@ def get_orders():
     return jsonify(load_orders())
 
 if __name__ == '__main__':
-    print("🚀 Сервер ДК запущен на http://localhost:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    print(f"🚀 Сервер ДК запущен на порту {port}")
+    app.run(host='0.0.0.0', port=port, debug=False)
