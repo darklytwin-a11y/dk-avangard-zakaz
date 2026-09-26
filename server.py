@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════════
 # ⚙️ НАСТРОЙКИ ПОЧТЫ (берутся из переменных Render)
-#    Вписывать в самом коде НЕ нужно — только на Render,
+#    Вписывать в коде НЕ нужно — только на Render,
 #    во вкладке Environment. Значения ниже — запасные.
 # ═══════════════════════════════════════════════════════
 
@@ -30,48 +30,53 @@ def load_orders():
     try:
         with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
-    except:
+    except Exception:
         return []
 
 def save_order(order):
-    orders = load_orders()
-    order['id'] = len(orders) + 1
-    order['created_at'] = datetime.now().isoformat()
-    orders.append(order)
-    with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(orders, f, ensure_ascii=False, indent=2)
-    return order['id']
+    try:
+        orders = load_orders()
+        order['id'] = len(orders) + 1
+        order['created_at'] = datetime.now().isoformat()
+        orders.append(order)
+        with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(orders, f, ensure_ascii=False, indent=2)
+        return order['id']
+    except Exception as e:
+        print(f"⚠️ Не удалось сохранить в файл (не критично): {e}")
+        # Возвращаем случайный id, чтобы заявка не пропала
+        return int(datetime.now().timestamp()) % 100000
 
 def send_email(order):
     duration_minutes = int(order.get('durationMinutes', 60))
     hall_price = int(order.get('hallPrice', 0))
     hours = duration_minutes / 60
     hall_cost = int(hours * hall_price)
-    
+
     dishes_price = int(order.get('dishesPrice', 0))
     speaker_cost = 500 if order.get('speaker') else 0
     light_cost = 150 if order.get('light') else 0
     total_cost = hall_cost + dishes_price + speaker_cost + light_cost
-    
+
     date_str = order.get('date', 'Не указана')
     crosses_midnight = order.get('crossesMidnight', False)
-    
+
     if crosses_midnight:
         try:
             start_date = datetime.strptime(date_str, '%Y-%m-%d')
             end_date = start_date + timedelta(days=1)
             date_display = f"{start_date.strftime('%d.%m.%Y')} → {end_date.strftime('%d.%m.%Y')} (следующий день)"
-        except:
+        except Exception:
             date_display = date_str
     else:
         try:
             d = datetime.strptime(date_str, '%Y-%m-%d')
             date_display = d.strftime('%d.%m.%Y')
-        except:
+        except Exception:
             date_display = date_str
-    
+
     subject = f"🎭 Новая заявка ДК: {order.get('eventType', '?')} — {order.get('name', '?')}"
-    
+
     body = f"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 НОВАЯ ЗАЯВКА НА АРЕНДУ ДК
@@ -118,15 +123,16 @@ def send_email(order):
 Получена: {datetime.now().strftime('%d.%m.%Y %H:%M')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
-    
+
     msg = MIMEMultipart()
     msg['From'] = EMAIL_FROM
     msg['To'] = ADMIN_EMAIL
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
-    
+
     try:
-        server = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT)
+        # timeout=30 — чтобы НЕ висеть вечно при проблемах со связью
+        server = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT, timeout=30)
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
         server.send_message(msg)
         server.quit()
@@ -144,29 +150,37 @@ def send_email(order):
 def index():
     return send_from_directory('.', 'form.html')
 
+@app.route('/health')
+def health():
+    return jsonify({'status': 'ok'})
+
 @app.route('/api/order', methods=['POST'])
 def create_order():
     try:
-        data = request.get_json()
-        
+        data = request.get_json(force=True, silent=True)
+
+        if not data:
+            return jsonify({'success': False, 'error': 'Пустой запрос'}), 400
+
         required = ['hall', 'eventType', 'dishes', 'date', 'startTime', 'endTime', 'name', 'phone']
         for field in required:
             if not data.get(field):
                 return jsonify({'success': False, 'error': f'Не заполнено: {field}'}), 400
-        
+
         order_id = save_order(data)
         order_number = f"#DK-{datetime.now().strftime('%m%d')}-{order_id:04d}"
-        
+
         email_sent = send_email(data)
-        
+
         return jsonify({
             'success': True,
             'orderNumber': order_number,
             'orderId': order_id,
             'emailSent': email_sent
         })
-        
+
     except Exception as e:
+        print(f"❌ Ошибка в create_order: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/orders', methods=['GET'])
