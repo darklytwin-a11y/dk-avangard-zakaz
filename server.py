@@ -2,21 +2,21 @@ from flask import Flask, request, jsonify, send_from_directory
 from datetime import datetime, timedelta
 import json
 import smtplib
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════════
-# ⚙️ НАСТРОЙКИ (РЕДАКТИРОВАТЬ ЗДЕСЬ)
+# ⚙️ НАСТРОЙКИ ПОЧТЫ (берутся из переменных Render)
 # ═══════════════════════════════════════════════════════
 
-ADMIN_EMAIL = "admin@dk.ru"           # ← Куда приходят заявки
-
-EMAIL_HOST = "smtp.mail.ru"           # SMTP сервер
-EMAIL_PORT = 465                       # Порт (465 для SSL)
-EMAIL_FROM = "dk-bot@mail.ru"         # ← Ваш ящик-отправитель
-EMAIL_PASSWORD = "пароль_приложения"   # ← Пароль для внешних приложений
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@dk.ru")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.mail.ru")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "465"))
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "")
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
 
 ORDERS_FILE = "orders.json"
 
