@@ -1,24 +1,18 @@
 import os
+import json
+import requests
 from flask import Flask, request, jsonify, send_from_directory
 from datetime import datetime, timedelta
-import json
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════════
-# ⚙️ НАСТРОЙКИ ПОЧТЫ (берутся из переменных Render)
-#    Вписывать в коде НЕ нужно — только на Render,
-#    во вкладке Environment. Значения ниже — запасные.
+# ⚙️ НАСТРОЙКИ (берутся из переменных Render Environment)
 # ═══════════════════════════════════════════════════════
 
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@dk.ru")
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.yandex.ru")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "465"))
-EMAIL_FROM = os.environ.get("EMAIL_FROM", "")
-EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
+FROM_EMAIL = os.environ.get("FROM_EMAIL", "noreply@dk-avangard.onrender.com")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 
 ORDERS_FILE = "orders.json"
 
@@ -43,11 +37,14 @@ def save_order(order):
             json.dump(orders, f, ensure_ascii=False, indent=2)
         return order['id']
     except Exception as e:
-        print(f"⚠️ Не удалось сохранить в файл (не критично): {e}")
-        # Возвращаем случайный id, чтобы заявка не пропала
+        print(f"⚠️ Не удалось сохранить в файл: {e}")
         return int(datetime.now().timestamp()) % 100000
 
 def send_email(order):
+    if not RESEND_API_KEY:
+        print("❌ RESEND_API_KEY не задан в Environment!")
+        return False
+
     duration_minutes = int(order.get('durationMinutes', 60))
     hall_price = int(order.get('hallPrice', 0))
     hours = duration_minutes / 60
@@ -77,8 +74,7 @@ def send_email(order):
 
     subject = f"🎭 Новая заявка ДК: {order.get('eventType', '?')} — {order.get('name', '?')}"
 
-    body = f"""
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    body = f"""━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 НОВАЯ ЗАЯВКА НА АРЕНДУ ДК
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -124,20 +120,32 @@ def send_email(order):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
-    msg = MIMEMultipart()
-    msg['From'] = EMAIL_FROM
-    msg['To'] = ADMIN_EMAIL
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain', 'utf-8'))
-
     try:
-        # timeout=30 — чтобы НЕ висеть вечно при проблемах со связью
-        server = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT, timeout=30)
-        server.login(EMAIL_FROM, EMAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        print("✅ Письмо отправлено")
-        return True
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": f"ДК Авангард <{FROM_EMAIL}>",
+                "to": [ADMIN_EMAIL],
+                "subject": subject,
+                "text": body
+            },
+            timeout=15
+        )
+
+        if response.status_code == 200:
+            print("✅ Письмо отправлено через Resend")
+            return True
+        else:
+            print(f"❌ Resend вернул ошибку: {response.status_code} {response.text}")
+            return False
+
+    except requests.exceptions.Timeout:
+        print("❌ Таймаут при отправке в Resend")
+        return False
     except Exception as e:
         print(f"❌ Ошибка отправки: {e}")
         return False
