@@ -47,6 +47,21 @@ def index():
 def health():
     return jsonify({'status': 'ok'})
 
+# ═══════════════════════════════════════════════════════
+# 🖼 СТАТИКА (логотип и другие картинки)
+# ═══════════════════════════════════════════════════════
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """Отдаёт любые файлы из корня репозитория (logo.png и т.д.)"""
+    try:
+        return send_from_directory('.', filename)
+    except Exception:
+        return "Файл не найден", 404
+
+# ═══════════════════════════════════════════════════════
+# API ЗАЯВОК
+# ═══════════════════════════════════════════════════════
+
 @app.route('/api/order', methods=['POST'])
 def create_order():
     try:
@@ -78,6 +93,10 @@ def create_order():
 @app.route('/api/orders', methods=['GET'])
 def get_orders():
     return jsonify(load_orders())
+
+# ═══════════════════════════════════════════════════════
+# ЗАПУСК
+# ═══════════════════════════════════════════════════════
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
