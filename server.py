@@ -7,13 +7,10 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════════
-# ⚙️ НАСТРОЙКИ (берутся из переменных Render Environment)
+# ⚙️ НАСТРОЙКИ (из Environment Render)
 # ═══════════════════════════════════════════════════════
 
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@dk.ru")
-FROM_EMAIL = os.environ.get("FROM_EMAIL", "noreply@dk-avangard.onrender.com")
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-
 ORDERS_FILE = "orders.json"
 
 # ═══════════════════════════════════════════════════════
@@ -41,8 +38,8 @@ def save_order(order):
         return int(datetime.now().timestamp()) % 100000
 
 def send_email(order):
-    if not RESEND_API_KEY:
-        print("❌ RESEND_API_KEY не задан в Environment!")
+    if not ADMIN_EMAIL or ADMIN_EMAIL == "admin@dk.ru":
+        print("❌ ADMIN_EMAIL не задан или равен запасному значению")
         return False
 
     duration_minutes = int(order.get('durationMinutes', 60))
@@ -115,36 +112,45 @@ def send_email(order):
 {order.get('comment') or 'нет'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Заявка через веб-форму ДК
+Заявка через веб-форму ДК «Авангард»
 Получена: {datetime.now().strftime('%d.%m.%Y %H:%M')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
     try:
+        # Отправка через FormSubmit (HTTPS, не SMTP — Render не блокирует)
         response = requests.post(
-            "https://api.resend.com/emails",
-            headers={
-                "Authorization": f"Bearer {RESEND_API_KEY}",
-                "Content-Type": "application/json"
-            },
+            f"https://formsubmit.co/ajax/{ADMIN_EMAIL}",
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
             json={
-                "from": f"ДК Авангард <{FROM_EMAIL}>",
-                "to": [ADMIN_EMAIL],
-                "subject": subject,
-                "text": body
+                "name": order.get('name', '—'),
+                "phone": order.get('phone', '—'),
+                "email": order.get('email') or 'не указан',
+                "message": body,
+                "_subject": subject,
+                "_template": "table",
+                "_captcha": "false"
             },
-            timeout=15
+            timeout=20
         )
 
         if response.status_code == 200:
-            print("✅ Письмо отправлено через Resend")
-            return True
+            data = response.json()
+            if data.get("success") == "true":
+                print("✅ Письмо отправлено через FormSubmit")
+                return True
+            else:
+                # FormSubmit вернул "false" — обычно это просьба подтвердить email
+                msg = data.get("message", "неизвестная ошибка")
+                print(f"⚠️ FormSubmit: {msg}")
+                print("   (скорее всего нужно один раз подтвердить email — проверьте почту)")
+                return False
         else:
-            print(f"❌ Resend вернул ошибку: {response.status_code} {response.text}")
+            print(f"❌ FormSubmit вернул статус {response.status_code}: {response.text}")
             return False
 
     except requests.exceptions.Timeout:
-        print("❌ Таймаут при отправке в Resend")
+        print("❌ Таймаут при отправке в FormSubmit")
         return False
     except Exception as e:
         print(f"❌ Ошибка отправки: {e}")
