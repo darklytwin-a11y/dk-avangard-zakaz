@@ -7,10 +7,12 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════════
-# ⚙️ НАСТРОЙКИ (из Environment Render)
+# ⚙️ НАСТРОЙКИ (берутся из переменных Render Environment)
 # ═══════════════════════════════════════════════════════
 
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@dk.ru")
+WEB3FORMS_KEY = os.environ.get("WEB3FORMS_KEY", "")
+
 ORDERS_FILE = "orders.json"
 
 # ═══════════════════════════════════════════════════════
@@ -38,8 +40,8 @@ def save_order(order):
         return int(datetime.now().timestamp()) % 100000
 
 def send_email(order):
-    if not ADMIN_EMAIL or ADMIN_EMAIL == "admin@dk.ru":
-        print("❌ ADMIN_EMAIL не задан или равен запасному значению")
+    if not WEB3FORMS_KEY:
+        print("❌ WEB3FORMS_KEY не задан в Environment!")
         return False
 
     duration_minutes = int(order.get('durationMinutes', 60))
@@ -118,39 +120,41 @@ def send_email(order):
 """
 
     try:
-        # Отправка через FormSubmit (HTTPS, не SMTP — Render не блокирует)
+        # Отправка через Web3Forms API (HTTPS, не SMTP — Render не блокирует)
         response = requests.post(
-            f"https://formsubmit.co/ajax/{ADMIN_EMAIL}",
+            "https://api.web3forms.com/submit",
             headers={"Content-Type": "application/json", "Accept": "application/json"},
             json={
-                "name": order.get('name', '—'),
-                "phone": order.get('phone', '—'),
-                "email": order.get('email') or 'не указан',
+                "access_key": WEB3FORMS_KEY,
+                "subject": subject,
+                "from_name": "ДК Авангард",
                 "message": body,
-                "_subject": subject,
-                "_template": "table",
-                "_captcha": "false"
+                "Помещение": order.get('hall', '—'),
+                "Мероприятие": order.get('eventType', '—'),
+                "Дата": date_display,
+                "Время": f"{order.get('startTime', '?')} — {order.get('endTime', '?')}",
+                "Итого": f"{total_cost:,} ₽",
+                "Заказчик": order.get('name', '—'),
+                "Телефон": order.get('phone', '—')
             },
             timeout=20
         )
 
         if response.status_code == 200:
             data = response.json()
-            if data.get("success") == "true":
-                print("✅ Письмо отправлено через FormSubmit")
+            if data.get("success"):
+                print("✅ Письмо отправлено через Web3Forms")
                 return True
             else:
-                # FormSubmit вернул "false" — обычно это просьба подтвердить email
                 msg = data.get("message", "неизвестная ошибка")
-                print(f"⚠️ FormSubmit: {msg}")
-                print("   (скорее всего нужно один раз подтвердить email — проверьте почту)")
+                print(f"❌ Web3Forms вернул ошибку: {msg}")
                 return False
         else:
-            print(f"❌ FormSubmit вернул статус {response.status_code}: {response.text}")
+            print(f"❌ Web3Forms вернул статус {response.status_code}: {response.text[:200]}")
             return False
 
     except requests.exceptions.Timeout:
-        print("❌ Таймаут при отправке в FormSubmit")
+        print("❌ Таймаут при отправке в Web3Forms")
         return False
     except Exception as e:
         print(f"❌ Ошибка отправки: {e}")
