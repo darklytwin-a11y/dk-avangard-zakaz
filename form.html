@@ -435,42 +435,66 @@
             document.getElementById('current-step').textContent = currentStep;
         }
         
-        async function submitOrder() {
-            const name = document.getElementById('client-name').value.trim();
-            const phone = document.getElementById('client-phone').value.trim();
-            const email = document.getElementById('client-email').value.trim();
-            const comment = document.getElementById('client-comment').value.trim();
+async function submitOrder() {
+    const name = document.getElementById('client-name').value.trim();
+    const phone = document.getElementById('client-phone').value.trim();
+    const email = document.getElementById('client-email').value.trim();
+    const comment = document.getElementById('client-comment').value.trim();
+    
+    if (!name) { alert('Пожалуйста, укажите ваше имя'); return; }
+    if (!phone) { alert('Пожалуйста, укажите телефон'); return; }
+    
+    order.name = name;
+    order.phone = phone;
+    order.email = email;
+    order.comment = comment;
+    
+    document.getElementById('loading-modal').classList.remove('hidden');
+    document.getElementById('btn-submit').disabled = true;
+    
+    // Повторяем до 3 раз, если сервер "спит"
+    let lastError = '';
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            const response = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(order)
+            });
             
-            if (!name) { alert('Пожалуйста, укажите ваше имя'); return; }
-            if (!phone) { alert('Пожалуйста, укажите телефон'); return; }
+            const text = await response.text();
             
-            order.name = name;
-            order.phone = phone;
-            order.email = email;
-            order.comment = comment;
+            if (!text) {
+                throw new Error('Пустой ответ сервера');
+            }
             
-            document.getElementById('loading-modal').classList.remove('hidden');
-            
+            let result;
             try {
-                const response = await fetch('/api/order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(order)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showSuccess(result.orderNumber);
-                } else {
-                    throw new Error(result.error || 'Ошибка сервера');
-                }
-            } catch (error) {
-                alert('Произошла ошибка: ' + error.message);
-            } finally {
+                result = JSON.parse(text);
+            } catch (e) {
+                throw new Error('Сервер вернул не JSON: ' + text.substring(0, 100));
+            }
+            
+            if (result.success) {
+                showSuccess(result.orderNumber);
                 document.getElementById('loading-modal').classList.add('hidden');
+                return;
+            } else {
+                throw new Error(result.error || 'Ошибка сервера');
+            }
+        } catch (error) {
+            lastError = error.message;
+            console.log(`Попытка ${attempt} не удалась: ${error.message}`);
+            if (attempt < 3) {
+                await new Promise(r => setTimeout(r, 2500)); // ждём 2.5 сек перед повтором
             }
         }
+    }
+    
+    alert('Не удалось отправить заявку: ' + lastError + '\n\nПопробуйте ещё раз через минуту.');
+    document.getElementById('loading-modal').classList.add('hidden');
+    document.getElementById('btn-submit').disabled = false;
+                    }
         
         function showSuccess(orderNumber) {
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
