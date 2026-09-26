@@ -1,8 +1,8 @@
+import os
 from flask import Flask, request, jsonify, send_from_directory
 from datetime import datetime, timedelta
 import json
 import smtplib
-import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
