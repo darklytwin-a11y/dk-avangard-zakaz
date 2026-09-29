@@ -84,6 +84,7 @@
                 <div id="progress-bar" class="progress-bar h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" style="width: 25%"></div>
             </div>
         </div>
+        
         <!-- ШАГ 1: Помещение -->
         <div id="step-1" class="step active">
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
@@ -139,6 +140,7 @@
                 Далее →
             </button>
         </div>
+        
         <!-- ШАГ 2: Мероприятие и доп. услуги -->
         <div id="step-2" class="step">
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
@@ -244,73 +246,74 @@
                         50 ₽ × <span id="tablecloth-n">1</span> шт. = <b id="tablecloth-sum">50 ₽</b>
                     </div>
                 </div>
+                
                 <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <span class="text-2xl">🎧</span>
                     Оборудование
                 </h2>
                 
                 <div class="space-y-3 mb-6">
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">🔊</span>
-                            <div>
+                    <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <span class="text-2xl flex-shrink-0">🔊</span>
+                            <div class="min-w-0">
                                 <div class="font-medium text-gray-800">Аренда активной колонки</div>
                                 <div class="text-xs text-gray-500">+500 ₽</div>
                             </div>
                         </div>
-                        <button onclick="toggleOption('speaker')" id="toggle-speaker" class="toggle-switch w-14 h-7 bg-gray-300 rounded-full relative">
-                            <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
-                        </button>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">💡</span>
-                            <div>
-                                <div class="font-medium text-gray-800">Световые эффекты</div>
-                                <div class="text-xs text-gray-500">+150 ₽</div>
-                            </div>
-                        </div>
-                        <button onclick="toggleOption('light')" id="toggle-light" class="toggle-switch w-14 h-7 bg-gray-300 rounded-full relative">
-                            <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
-                        </button>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">📺</span>
-                            <div>
-                                <div class="font-medium text-gray-800">Телевизор</div>
-                                <div class="text-xs text-gray-500">+500 ₽</div>
-                            </div>
-                        </div>
-                        <button onclick="toggleOption('tv')" id="toggle-tv" class="toggle-switch w-14 h-7 bg-gray-300 rounded-full relative">
+                        <button onclick="toggleOption('speaker')" id="toggle-speaker" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
                             <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
                         </button>
                     </div>
                     
                     <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
-    <div class="flex items-center gap-3 flex-1 min-w-0">
-        <span class="text-2xl flex-shrink-0">🔉</span>
-        <div class="min-w-0">
-            <div class="font-medium text-gray-800">Комплект звукового оборудования</div>
-            <div class="text-xs text-gray-500">+3 500 ₽</div>
-        </div>
-    </div>
-    <button onclick="toggleOption('sound')" id="toggle-sound" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
-        <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
-    </button>
-</div>
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <span class="text-2xl flex-shrink-0">💡</span>
+                            <div class="min-w-0">
+                                <div class="font-medium text-gray-800">Световые эффекты</div>
+                                <div class="text-xs text-gray-500">+150 ₽</div>
+                            </div>
+                        </div>
+                        <button onclick="toggleOption('light')" id="toggle-light" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
+                            <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
+                        </button>
+                    </div>
                     
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">🎤</span>
-                            <div>
+                    <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <span class="text-2xl flex-shrink-0">📺</span>
+                            <div class="min-w-0">
+                                <div class="font-medium text-gray-800">Телевизор</div>
+                                <div class="text-xs text-gray-500">+500 ₽</div>
+                            </div>
+                        </div>
+                        <button onclick="toggleOption('tv')" id="toggle-tv" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
+                            <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <span class="text-2xl flex-shrink-0">🔉</span>
+                            <div class="min-w-0">
+                                <div class="font-medium text-gray-800">Комплект звукового оборудования</div>
+                                <div class="text-xs text-gray-500">+3 500 ₽</div>
+                            </div>
+                        </div>
+                        <button onclick="toggleOption('sound')" id="toggle-sound" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
+                            <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <span class="text-2xl flex-shrink-0">🎤</span>
+                            <div class="min-w-0">
                                 <div class="font-medium text-gray-800">Караоке</div>
                                 <div class="text-xs text-gray-500">+1 500 ₽</div>
                             </div>
                         </div>
-                        <button onclick="toggleOption('karaoke')" id="toggle-karaoke" class="toggle-switch w-14 h-7 bg-gray-300 rounded-full relative">
+                        <button onclick="toggleOption('karaoke')" id="toggle-karaoke" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
                             <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
                         </button>
                     </div>
@@ -322,28 +325,28 @@
                 </h2>
                 
                 <div class="space-y-3">
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">💨</span>
-                            <div>
+                    <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <span class="text-2xl flex-shrink-0">💨</span>
+                            <div class="min-w-0">
                                 <div class="font-medium text-gray-800">Генератор дыма + жидкость 0,5 л</div>
                                 <div class="text-xs text-gray-500">+700 ₽</div>
                             </div>
                         </div>
-                        <button onclick="toggleOption('smoke')" id="toggle-smoke" class="toggle-switch w-14 h-7 bg-gray-300 rounded-full relative">
+                        <button onclick="toggleOption('smoke')" id="toggle-smoke" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
                             <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
                         </button>
                     </div>
                     
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">👶</span>
-                            <div>
+                    <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <span class="text-2xl flex-shrink-0">👶</span>
+                            <div class="min-w-0">
                                 <div class="font-medium text-gray-800">Батут детский</div>
                                 <div class="text-xs text-gray-500">+1 500 ₽</div>
                             </div>
                         </div>
-                        <button onclick="toggleOption('batut')" id="toggle-batut" class="toggle-switch w-14 h-7 bg-gray-300 rounded-full relative">
+                        <button onclick="toggleOption('batut')" id="toggle-batut" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
                             <div class="toggle-dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
                         </button>
                     </div>
@@ -359,6 +362,7 @@
                 </button>
             </div>
         </div>
+        
         <!-- ШАГ 3: Дата и время -->
         <div id="step-3" class="step">
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
@@ -401,7 +405,7 @@
                     <span class="text-purple-700 font-medium">⏱ Длительность: <span id="duration-value">0</span> ч. <span id="duration-minutes"></span></span>
                 </div>
                 
-                <!-- НОВОЕ: детальный расчёт стоимости (аренда + все выбранные услуги) -->
+                <!-- Детальный расчёт стоимости (аренда + все выбранные услуги) -->
                 <div id="price-breakdown" class="hidden bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4">
                     <div class="font-semibold text-purple-800 mb-2">💰 РАСЧЁТ СТОИМОСТИ</div>
                     <div id="price-rows" class="space-y-1 text-sm text-gray-600"></div>
@@ -425,6 +429,7 @@
                 </button>
             </div>
         </div>
+        
         <!-- ШАГ 4: Контакты -->
         <div id="step-4" class="step">
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
@@ -501,6 +506,7 @@
             <p class="text-gray-700 font-medium">Отправка заявки...</p>
         </div>
     </div>
+    
     <script>
         // ═══════════════════════════════════════════════
         // ⚙️ ГЛАВНАЯ НАСТРОЙКА: КЛЮЧ WEB3FORMS
@@ -641,6 +647,7 @@
         function refreshPrice() {
             if (order.durationMinutes > 0) renderPriceBlock();
         }
+        
         // ═══════════════════════════════════════════════
         // ШАГ 3: Дата и время (с переходом через полночь)
         // ═══════════════════════════════════════════════
