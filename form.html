@@ -183,7 +183,7 @@
                             <span class="text-2xl flex-shrink-0">🍽</span>
                             <div class="min-w-0">
                                 <div class="font-medium text-gray-800">Аренда посуды ДК</div>
-                                <div class="text-xs text-gray-500">+300 ₽ · выключено = своя посуда</div>
+                                <div class="text-xs text-gray-500">+300 ₽ · ущерб 1 ед. — 150 ₽<br>выключено = своя посуда</div>
                             </div>
                         </div>
                         <button onclick="toggleDishes()" id="toggle-dishes" class="toggle-switch flex-shrink-0 w-14 h-7 bg-gray-300 rounded-full relative">
@@ -592,7 +592,7 @@
             const tableclothCost = order.tablecloth === 'yes' ? order.tableclothQty * 50 : 0;
             
             const services = [];
-            if (order.dishesPrice > 0) services.push({ label: 'Посуда', sum: order.dishesPrice });
+            if (order.dishesPrice > 0) services.push({ label: 'Посуда (ущерб 1 ед. — 150 ₽)', sum: order.dishesPrice });
             if (tableclothCost > 0) services.push({ label: `Скатерти (${order.tableclothQty} × 50 ₽)`, sum: tableclothCost });
             if (order.speaker) services.push({ label: 'Активная колонка', sum: 500 });
             if (order.light) services.push({ label: 'Световые эффекты', sum: 150 });
